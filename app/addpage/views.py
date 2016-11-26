@@ -142,22 +142,45 @@ def add_works(url_user_id):
         subject_id.append(x.Subject_Id)
     g.math = len(subject_id)
     g.subject_id =  subject_id
+    g.num_group = 0
     return render_template('teacher_add_works.html')
 
+@Addpage.route('/year')
+def years(url_user_id):
+    connect = sqlite3.connect("Data.db")
+    c = connect.cursor()
+    subject = request.values.get('subsubject')
+    print subject
+    group_limit = c.execute("SELECT Year from Subject WHERE Subject_ID =  ? ",(str(subject),))
+    g.group_limit = group_limit.fetchall()
+    g.group_limit = [x[0] for x in g.group_limit]
+    print g.group_limit
+    g.num_group = len(g.group_limit)
+    print g.num_group
+    return jsonify(authen=True,YEAR=g.num_group,YEARR=g.group_limit)
+
 @Addpage.route('/sub_add_works')
-def sub_add_works(url_user_id, url_Subject_id, url_Year):
+def sub_add_works(url_user_id):
+    print "555"
     subsubject_from_form = request.values.get('subsubject')
+    subsubyear_from_form = request.values.get('subsubyear')
     subtypework_from_form = request.values.get('subtypework')
     subgroup_from_form = request.values.get('subgroup')
+    subfullmark_from_form = request.values.get('subfullmark')
     subdetail_from_form = request.values.get('subdetail')
     subdate_from_form = request.values.get('subdate')
     subtime_from_form = request.values.get('subtime')
-    # connect = sqlite3.connect("Data.db")
-    # c = connect.cursor()
-    # c.execute("""INSERT INTO `work` (`Subject_ID`, `Year`, `WorkID`, `Deadlines`, `status`, `type`, `FullMark`, `Grading`, `lim_member`) VALUES
-    #         (?,?,?,?,?,?,?,?,?);""", (url_Subject_id,url_Year, WorkID, Deadlines, status, type, FullMark, Grading, lim_member))
-    # connect.commit()
-    # c.close()
+    connect = sqlite3.connect("Data.db")
+    c = connect.cursor()
+    c.execute("SELECT WorkID from work WHERE Subject_ID =  ? AND Year = ? ",(subsubject_from_form, subsubyear_from_form))
+    WorkID = c.fetchall()
+    number = WorkID.count()
+    status = "Active"
+    Grading = "0"
+    c.execute("""INSERT INTO `work` (`Subject_ID`, `Year`, `WorkID`, `Deadlines`, `status`, `type`, `FullMark`, `Grading`, `lim_member`) VALUES
+            (?,?,?,?,?,?,?,?,?);""", (subsubject_from_form,subsubyear_from_form, str(int(number)+1), subdate_from_form, status, subtypework_from_form, subfullmark_from_form, Grading, subgroup_from_form))
+    connect.commit()
+    c.close()
     return render_template('teacher_add_works.html')
 
 @Addpage.route('/Add_subject_db')

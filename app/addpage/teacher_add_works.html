@@ -66,9 +66,15 @@ mr.parentNode.removeChild(mr);
           <div class="w3-col l6 w3-white w3-left">
           <form method="#" action="#">
             Subject:
-              <select name="subject_code">
+              <select name="subject_code" onchange="return year()">
                 {% for x in range(0,g.math) %}
-                <option value="{{g.subject_id}}">{{g.subject_id[x]}}</option>
+                <option    value="{{g.subject_id[x]}}">{{g.subject_id[x]}}</option>
+                {% endfor %}
+              </select><br><br>
+            Year:
+            <select name="subject_year">
+                {% for x in range(0,g.num_group) %}
+                <option name="subject_year_de" value="{{g.group_limit[x]}}">{{g.group_limit[x]}}</option>
                 {% endfor %}
               </select><br><br>
             Type of work:
@@ -80,16 +86,19 @@ mr.parentNode.removeChild(mr);
               </select><br><br>
             <input type="radio" name = "radioButton" value = "group" checked/>Group<input type="text" id="#">/Gr.<br>
             <input type="radio" name = "radioButton" value = "Individual" checked/>Individual<br><br>
-            <!-- Grouping by teacher<br> <!--confused about --> -->
+            <!-- Grouping by teacher<br> <!--confused about -->
               <!-- <input type="checkbox" name="teacher_grouping" value="yes">Yes<input type="text" id="members" name="members"><br> -->
               <!-- <input type="checkbox" name="teacher_grouping" value="no">No<br><br> -->
+            FullMark:
+              <textarea rows="1" cols="4" wrap="soft" id="FullMark" name="FullMark" required="">
+              </textarea><br><br>
             work detail:
               <br><textarea rows="" cols="" wrap="soft" id="score_ref" name="score_ref" required="">
               </textarea><br><br>
             Deadline:<br>
               <input type="date" name="date"><br>
               <input type="time" name="time"><br><br>
-              <input type="submit" value="Add">
+              <button class="w3-btn w3-green" onclick="return addwork()">add</button>
           </form>
 
           <!-- semester pull semester_data from db -->
@@ -129,15 +138,37 @@ function w3_close() {
     mySidenav.style.display = "none";
     overlayBg.style.display = "none";
 }
-function addwork(){
-  var authentication2=false;
-  $.ajax({ url: "{{url_for('Addpage.sub_add_works',url_user_id=g.id)}}",
-  method: "GET",
+function year(){
+  var authentication3=false;
+  $.ajax({ url: "{{url_for('Addpage.years',url_user_id=g.id)}}",
   async: false,
   data: {
   subsubject: $('select[name="subject_code"]').val(),
+  },
+  datatype: 'json',
+
+  success: function(data){
+  authentication=data.authen;
+  $('option[name="subject_year_de"]').remove();
+  for (var i = 0; i < data.YEAR; i++){
+  console.log(data.YEARR);
+ $('select[name="subject_year"]').append("<option name=\"subject_year_de\" value=\""+data.YEARR[i]+"\">"+data.YEARR[i]+"</option>");
+ }
+  }
+  });
+  return authentication3;
+}
+
+function addwork(){
+  var authentication2=false;
+  $.ajax({ url: "{{url_for('Addpage.sub_add_works',url_user_id=g.id)}}",
+  async: false,
+  data: {
+  subsubject: $('select[name="subject_code"]').val(),
+  subsubyear: $('select[name="subject_year"]').val(),
   subtypework: $('select[name="type"]').val(),
   subgroup: $('input[type="radio"]:checked').val(),
+  subfullmark: $('textarea[id="FullMark"]').val(),
   subdetail: $('textarea[id="score_ref"]').val(),
   subdate: $('input[name="date"]').val(),
   subtime: $('input[name="time"]').val(),
@@ -145,6 +176,7 @@ function addwork(){
   datatype: 'json',
   success: function(data){
   authentication2 = data.authen;
+
   }
   });
   return authentication2;

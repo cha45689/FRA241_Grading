@@ -104,8 +104,7 @@ def Subject_work_score(url_Subject_id, url_Year, url_user_id, work_id):
         ID_student1 = ID_student.fetchall()
 
         # find group_limit
-        group_limit = c.execute("SELECT lim_member from Work WHERE Subject_ID =  ? AND Year = ? AND WorkID = ?",
-                                (url_Subject_id, url_Year, g.work_id))
+        group_limit = c.execute("SELECT lim_member from Work WHERE Subject_ID =  ? AND Year = ? AND WorkID = ?",(url_Subject_id, url_Year, g.work_id))
         g.group_limit = group_limit.fetchone()[0]
 
         for row in ID_student1:
