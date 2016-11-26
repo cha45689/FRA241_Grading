@@ -174,14 +174,14 @@ def sub_add_works(url_user_id):
     c = connect.cursor()
     c.execute("SELECT WorkID from work WHERE Subject_ID =  ? AND Year = ? ",(subsubject_from_form, subsubyear_from_form))
     WorkID = c.fetchall()
-    number = WorkID.count()
+    number = len(WorkID)
     status = "Active"
     Grading = "0"
     c.execute("""INSERT INTO `work` (`Subject_ID`, `Year`, `WorkID`, `Deadlines`, `status`, `type`, `FullMark`, `Grading`, `lim_member`) VALUES
             (?,?,?,?,?,?,?,?,?);""", (subsubject_from_form,subsubyear_from_form, str(int(number)+1), subdate_from_form, status, subtypework_from_form, subfullmark_from_form, Grading, subgroup_from_form))
     connect.commit()
     c.close()
-    return render_template('teacher_add_works.html')
+    return jsonify(authen=True)
 
 @Addpage.route('/Add_subject_db')
 def Add_subject_db(url_user_id):
