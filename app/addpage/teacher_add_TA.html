@@ -76,9 +76,10 @@ mr.parentNode.removeChild(mr);
     <i class="fa fa-remove"></i>
   </a>
   <h4><b>Menu</b></h4>
-  <a href="{{url_for('Addpage.add_subject',url_user_id=g.id)}}" class="w3-hover-black">Add subject</a>   <!--go to teacher_add_TApage-->
+ {% if g.user.Profile['Role'] == 'teacher' %}
+      <a href="{{url_for('Addpage.add_subject',url_user_id=g.id)}}" class="w3-hover-black">Add subject</a>   <!--go to teacher_add_TApage-->
   <a href="{{url_for('Addpage.add_works',url_user_id=g.id)}}">Add work</a>   <!--go to teacher_add_work page-->
-  {% if g.user.Profile['Role'] == 'teacher' %}
+
     {% if g.current != 'TA' %}
       <a href="{{url_for('Addpage.add_TA',url_user_id=g.id,url_Subject_id=g.subject_id,url_Year=g.year)}}">Add TA</a><!--go to teacher_add_T+---------------------A page-->
  {% else %}
