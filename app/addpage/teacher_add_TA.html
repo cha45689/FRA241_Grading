@@ -71,13 +71,21 @@ mr.parentNode.removeChild(mr);
 </div>
 
 <!-- Sidenav -->
-<!--nav class="w3-sidenav w3-collapse w3-theme-l5 w3-animate-left" style="z-index:3;width:250px;margin-top:51px;" id="mySidenav">
+<nav class="w3-sidenav w3-collapse w3-theme-l5 w3-animate-left" style="z-index:3;width:250px;margin-top:51px;" id="mySidenav">
   <a href="javascript:void(0)" onclick="w3_close()" class="w3-right w3-xlarge w3-padding-large w3-hover-black w3-hide-large" title="close menu">
     <i class="fa fa-remove"></i>
   </a>
   <h4><b>Menu</b></h4>
-  <a href="file:///C:/Users/fibo/Documents/GitHub/FRA241_Grading/app/web2/html/teacher_add_subject.html" class="w3-hover-black">Add subject</a>
-  <a href="file:///C:/Users/fibo/Documents/GitHub/FRA241_Grading/app/web2/html/grouping.html" class="w3-hover-black">Grouping Random</a>
+  <a href="{{url_for('Addpage.add_subject',url_user_id=g.id)}}" class="w3-hover-black">Add subject</a>   <!--go to teacher_add_TApage-->
+  <a href="{{url_for('Addpage.add_works',url_user_id=g.id)}}">Add work</a>   <!--go to teacher_add_work page-->
+  {% if g.user.Profile['Role'] == 'teacher' %}
+    {% if g.current != 'TA' %}
+      <a href="{{url_for('Addpage.add_TA',url_user_id=g.id,url_Subject_id=g.subject_id,url_Year=g.year)}}">Add TA</a><!--go to teacher_add_T+---------------------A page-->
+ {% else %}
+  <a href="{{url_for('Addpage.add_student',url_user_id=g.id,url_Subject_id=g.subject_id,url_Year=g.year)}}">Add student</a><!--go to teacher_add_T+---------------------A page-->
+  {% endif %}
+  {% endif %}
+  <!--a href="#" class="w3-hover-black">Grouping Random</a>   <!--go to grouping page-->
 </nav>
 
 <!-- Overlay effect when opening sidenav on small screens -->

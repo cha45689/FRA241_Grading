@@ -100,7 +100,15 @@ tr:nth-child(even) {
         <i class="fa fa-remove"></i>
     </a>
     <h4><b>Menu</b></h4>
-    <a href="#" class="w3-hover-black">upload work</a>
+    <!--a href="#" class="w3-hover-black">upload work</a-->
+          {% if g.user.Profile['Role']== 'teacher' %}
+    <a href="{{url_for('Addpage.add_subject',url_user_id=g.id)}}" class="w3-hover-black">Add subject</a>
+    <a href="{{url_for('Addpage.add_works',url_user_id=g.id)}}" class="w3-hover-black">Add work</a>
+    <a href="{{url_for('Addpage.add_timetable2',url_user_id=g.id)}}" class="w3-hover-black">Add timetable</a>
+  <a href="{{url_for('Addpage.add_TA',url_user_id=g.id,url_Subject_id=g.subject_id,url_Year=g.year)}}" class="w3-hover-black">Add TA</a>
+  {% endif %}
+  <a href="{{url_for('Addpage.add_student',url_user_id=g.id,url_Subject_id=g.subject_id,url_Year=g.year)}}" class="w3-hover-black">Add student</a>
+
     {% if g.work.lim_member > 1 %}
     {% if g.user.Profile['Role'] == 'teacher' %}
         <a href="{{url_for('Addpage.manage_group',url_user_id=g.id,url_Subject_id=g.Subject_id,url_Year=g.Year,workID=g.work_id,mode = 'random')}}" class="w3-hover-black">Grouping Random</a>

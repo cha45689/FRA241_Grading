@@ -151,6 +151,7 @@ def manage_group( url_Subject_id, url_user_id, url_Year, workID, mode):
     g.user = User(url_user_id)
     g.Subject_id = url_Subject_id
     g.Year = url_Year
+    g.work_id=workID
     g.id = url_user_id
 
     g.mode = mode
