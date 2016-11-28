@@ -1,7 +1,8 @@
 import sqlite3
 import datetime
 from flask import url_for
-
+import urllib
+from flask import request
 
 class submitWork:
     def __init__(self, Work_ID, Year, Subject_Id, ID):
@@ -96,7 +97,14 @@ class submitWork:
         # print self.workID,self.Year,self.Subject_Id,work_address
         return work_address[0]
 
-    def Upload(self, repository, name):  # address
+    def Upload(self, repository, name):
+
+
+
+
+
+
+        # address
         # connect = sqlite3.connect("Data.db")
         # c = connect.cursor()
         # # get address of work
@@ -116,5 +124,14 @@ class submitWork:
         pass
 
     def Download(self):
+        url = 'kmmc.in/wp-content/uploads/2014/01/lesson2.pdf'
+        print "Downloading wiht urllib"
+        urllib.urlretrive(url,"lesson2.pdf")
+
+        print "Downloading worksheet"
+        r = request.get(url)
+        with open("lesson2.pdf") as file:
+            file.write(r.content)
+
         # self.address
         pass

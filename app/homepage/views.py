@@ -37,7 +37,28 @@ def Home(url_user_id):
 def CurrentSubject(url_user_id):
     g.id = url_user_id
     g.user = User(g.id)
+    lecturer = []
+    g.lecturer = []
+    g.data = []
+    g.title = []
+    conn = sqlite3.connect('Data.db')
+    c = conn.cursor()
     g.subject_list = g.user.Subject['current']
+    for i in g.subject_list:
+        c.execute("SELECT ID, Subject_ID from Enrol WHERE Subject_ID = ? AND Subject_Year = ? AND Enrol_Type = 'teacher' ",(i.data['Subject_ID'],i.data['Year']))
+        lecturer.append(c.fetchall())
+        c.execute("SELECT WorkID from work WHERE Year = ? AND Subject_ID = ? ",(i.data['Year'],i.data['Subject_ID']))
+        g.data.append([len(c.fetchall()),i.data['Subject_ID']])
+        c.execute("SELECT title, Subject_ID from Subject WHERE Subject_ID = ? AND year = ?",(i.data['Subject_ID'],i.data['Year']))
+        g.title.append(c.fetchone())
+    print g.title
+    for i in lecturer:
+        print i
+        if i != [] :
+            user = User(i[0][0])
+            user = user.Profile['Title'] + user.Profile['Name'] + " " + user.Profile['Surname']
+            g.lecturer.append([user,i[0][1]])
+
 
     return render_template('sub.html')
 
@@ -110,7 +131,7 @@ def CurrentScore(url_user_id):
                 total = total + int(work.Get_Mark()[0])
                 g.work.append([workID, position, work.Get_Mark(), fullmark.Get_fullmark()])
             except Exception:
-                g.work.append([workID, position, None, fullmark.Get_fullmark()])
+                g.work.append([workID, position, [0,], fullmark.Get_fullmark()])
                 total = total + 0
             full_total = full_total + fullmark.Get_fullmark()
         g.total_mark.append([subject.Subject_Id, int(total), int(full_total)])

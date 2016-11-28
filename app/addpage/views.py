@@ -21,13 +21,71 @@ def addpage(endpoint, url_user_id):
 @Addpage.route('/<url_Subject_id>/<url_Year>/add_work')
 def add_assignment(url_user_id, url_Subject_id, url_Year):
     return 'boo'
+@Addpage.route('/add_timetable2')
+def add_timetable2(url_user_id):
+    connect = sqlite3.connect("Data.db")
+    c = connect.cursor()
+    c.execute("SELECT Subject_ID from Enrol WHERE ID = "+ str(url_user_id))
+    g.subject = c.fetchall()
+    return render_template('teacher_add_timetable.html')
 
+@Addpage.route('/add_timetable')
+def add_timetable(url_user_id):
+    Subjectid_from_form = request.values.get('ID')
+    section_from_form = request.values.get('section')
+    year_from_form = request.values.get('year')
+    day_from_form = request.values.get('day')
+    room_from_form = request.values.get('room')
+    start = request.values.get('start')
+    stop = request.values.get('stop')
+    time =str(start) + "-" + str(stop)
+    connect = sqlite3.connect("Data.db")
+    c = connect.cursor()
+    print room_from_form
+    print Subjectid_from_form,section_from_form,year_from_form,day_from_form,room_from_form,time
 
-
+    if str(section_from_form) == "All":
+        c.execute("SELECT * from Enrol WHERE Subject_ID = ? AND subject_Year = ?   "
+                  , (Subjectid_from_form, year_from_form))
+    else:
+        c.execute("SELECT * from Enrol WHERE Subject_ID = ? AND subject_Year = ? AND SECTION = ? "
+                  ,(Subjectid_from_form,year_from_form,section_from_form))
+    k =c.fetchone()
+    if k != None and str(section_from_form) != "All":
+        print "1"
+        c.execute("""INSERT INTO `SubjectDetail` (`Subject_ID`,`year`,`section`,`day`,`time`,`room`,`title`,`detail`,`syllabus`) VALUES
+                    (?,?,?,?,?,?,?,?,?);""", (Subjectid_from_form,year_from_form,section_from_form,day_from_form,time,room_from_form,None,None,None))
+        connect.commit()
+        c.close()
+        return jsonify(authen = True)
+    elif  k != None and str(section_from_form) == "All":
+        c.execute("""INSERT INTO `SubjectDetail` (`Subject_ID`,`year`,`section`,`day`,`time`,`room`,`title`,`detail`,`syllabus`) VALUES
+                            (?,?,?,?,?,?,?,?,?);""", (
+        Subjectid_from_form, year_from_form, 'A', day_from_form, time, room_from_form, None, None, None))
+        c.execute("""INSERT INTO `SubjectDetail` (`Subject_ID`,`year`,`section`,`day`,`time`,`room`,`title`,`detail`,`syllabus`) VALUES
+                                    (?,?,?,?,?,?,?,?,?);""", (
+            Subjectid_from_form, year_from_form, 'B', day_from_form, time, room_from_form, None, None,
+            None))
+        connect.commit()
+        c.close()
+        return jsonify(authen=True)
+    else :
+        print "2"
+        c.close()
+        return jsonify(authen = False)
 
 
 @Addpage.route('/add_subject')
 def add_subject(url_user_id):
+    g.user = User(url_user_id)
+    conn = sqlite3.connect('Data.db')
+    c=conn.cursor()
+    subject = c.execute("SELECT * from Subject")
+    subject = subject.fetchall()
+    print subject
+    g.subject_list = [str(x[0]) for x in subject]
+    print g.subject_list
+    return render_template('teacher_add_subject.html')
     return render_template('teacher_add_subject.html')
 
 
@@ -88,18 +146,23 @@ def add_TA(url_user_id, url_Subject_id, url_Year):
     return render_template('teacher_add_TA.html')
 
 
-@Addpage.route('/<url_Subject_id>/<url_Year>/manage_group')
-def manage_group( url_Subject_id, url_user_id, url_Year):
+@Addpage.route('/<url_Subject_id>/<url_Year>/<workID>/<mode>/manage_group')
+def manage_group( url_Subject_id, url_user_id, url_Year, workID, mode):
     g.user = User(url_user_id)
     g.Subject_id = url_Subject_id
     g.Year = url_Year
+    g.id = url_user_id
+
+    g.mode = mode
     g.unGroup = []
     g.nonGroup = []
     connect = sqlite3.connect('Data.db')
     c= connect.cursor()
-    c.execute("SELECT Group_ID, ID, WorkID from Groups WHERE Subject_ID = ? AND Year = ? ",
-                (g.Subject_id, g.Year))
+    c.execute("SELECT Group_ID, ID from Groups WHERE Subject_ID = ? AND Year = ? AND WorkID = ?",
+                (g.Subject_id, g.Year,workID))
     g.group_id = c.fetchall()
+    g.group_id = [[str(x[0]),str(x[1])] for x in g.group_id]
+    print g.group_id
     c.execute("SELECT ID from Enrol WHERE Subject_ID = ? AND subject_Year = ?",(g.Subject_id,g.Year))
     Id = c.fetchall()
     c.execute("SELECT workID, lim_member from work WHERE Subject_ID = ? AND Year = ?",(g.Subject_id,g.Year))
@@ -129,7 +192,7 @@ def manage_group( url_Subject_id, url_user_id, url_Year):
             if x[2] == y[0]  and str(y[1]) != '1':
                 g.work_ID.append(x[2])
     if g.user.Profile['Role'] == 'student':
-        return render_template('student_grouping.html')
+        return render_template('grouping.html')
     else:
         return render_template('grouping.html')
 
@@ -189,15 +252,16 @@ def Add_subject_db(url_user_id):
     Subject_name_from_form = request.values.get('subname')
     Subject_detial_from_form = request.values.get('subdetial')
     grading_from_form = request.values.get('subref')
-    sec_from_form = request.values.get('section')
+    sec_from_form = request.values.get('section`')
+    syllabus_from_form = request.values.get('syllabus')
     year_from_form = request.values.get('year')
     conn = sqlite3.connect('Data.db')  # connect Data.db
     c = conn.cursor()
     a = c.execute("SELECT * from subject WHERE Subject_ID = ? AND Year = ?",(str(Subjectid_from_form), str(year_from_form[2:4])))
     a = a.fetchone()
     if a==None:
-        c.execute("""INSERT INTO 'subject' (`Subject_ID`, `Year`, `Description`, `FullMark`, `Grading` , `Name` ) VALUES
-        (?,?,?,?,?,?);""",(Subjectid_from_form,year_from_form,Subject_detial_from_form,'100',grading_from_form,Subject_name_from_form))
+        c.execute("""INSERT INTO 'subject' (`Subject_ID`, `Year`, `Description`, `FullMark`, `Grading` , `Title`, `syllabus`  ) VALUES
+        (?,?,?,?,?,?,?);""",(Subjectid_from_form,year_from_form,Subject_detial_from_form,'100',grading_from_form,Subject_name_from_form,syllabus_from_form))
         c.execute("""INSERT INTO 'Enrol' (`ID`, `Subject_ID`, `subject_Year`,`Enrol_Type`,`SECTION`) VALUES
         (?, ?, ?, ?, ?);""", (
             url_user_id, Subjectid_from_form, year_from_form, 'teacher',
@@ -224,12 +288,17 @@ def removeperson(url_user_id, url_Subject_id, url_Year):
     print id_from_form
     k = c.execute("SELECT * from Enrol WHERE ID = ? AND Subject_ID = ? AND subject_Year = ?",
                   (id_from_form, url_Subject_id, url_Year))
-    if k.fetchone() != None:
-        c.execute("""DELETE FROM Enrol WHERE ID = ? AND Subject_ID = ? AND subject_Year = ?""",(id_from_form, url_Subject_id, url_Year))
-        conn.commit()
-        c.close()
-        conn.close()
-        return jsonify(authen=True)
+    f = k.fetchone()
+    ka = c.execute("SELECT * from Enrol WHERE  Subject_ID = ? AND subject_Year = ? AND Enrol_Type = ?",
+                  ( url_Subject_id, url_Year,'teacher'))
+    s=ka.fetchall()
+    if f != None:
+        if len(s) >1:
+            c.execute("""DELETE FROM Enrol WHERE ID = ? AND Subject_ID = ? AND subject_Year = ?""",(id_from_form, url_Subject_id, url_Year))
+            conn.commit()
+            c.close()
+            conn.close()
+            return jsonify(authen=True)
     else:
         return jsonify(authen=False)
 
@@ -323,12 +392,12 @@ def add_user_group(url_user_id,url_Subject_id,url_Year):
     print workID_from_form,group_from_form,member_from_form
     c.execute("SELECT ID from Groups WHERE ID = ? AND WorkID = ? AND Subject_ID = ? AND Year = ? ",(member_from_form,workID_from_form,url_Subject_id,url_Year))
     Id = c.fetchone()
-    c.execute("SELECT ID grom Enrols WHERE ID = ?",(member_from_form))
+    c.execute("SELECT ID from Enrol WHERE ID = "+str(member_from_form))
     c_Id = c.fetchone()
     print workID_from_form
     print group_from_form
     print member_from_form
-    print Id
+    print str(Id) +"id"
     if Id == None and c_Id != None:
         print "checkd"
         c.execute("""INSERT INTO `Groups` (`Subject_ID`, `Year`, `WorkID`, `ID`, `Group_ID`) VALUES
@@ -341,3 +410,19 @@ def add_user_group(url_user_id,url_Subject_id,url_Year):
         c.close()
         return jsonify(authen = False)
 
+@Addpage.route('/<url_Subject_id>/<url_Year>/<workID>/remove_group')
+def remove_group(url_user_id,url_Subject_id,url_Year,workID):
+    print "test"
+
+    group_from_form = request.values.get('group')
+    id_from_form = request.values.get('id')
+    connect = sqlite3.connect('Data.db')
+    c = connect.cursor()
+
+    c.execute("""DELETE FROM Groups WHERE Subject_ID = ? AND Year = ? AND WorkID = ?
+                AND ID = ? AND Group_ID = ? """,(url_Subject_id,url_Year,
+                workID,id_from_form,group_from_form))
+
+    connect.commit()
+    c.close()
+    return jsonify(authen = True)
