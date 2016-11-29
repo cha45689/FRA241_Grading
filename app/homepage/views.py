@@ -81,8 +81,13 @@ def CurrentWork(url_user_id):
     for subject in g.subject:
         subject1 = Subject(subject,Year)
         for work in sorted(subject1.get_work(), key=itemgetter(2)):
-            deadline = work[3].split('/')
-            deadline = datetime.date(int(deadline[2]),int(deadline[1]),int(deadline[0]))
+            deadline=work[3]
+            if '-' in deadline:
+                deadline = work[3].split('-')
+                deadline = datetime.date(int(deadline[0]), int(deadline[1]), int(deadline[2]))
+            else:
+                deadline = work[3].split('/')
+                deadline = datetime.date(int(deadline[2]), int(deadline[1]), int(deadline[0]))
             if deadline <= year:
                 # check work from submit work
                 try:
